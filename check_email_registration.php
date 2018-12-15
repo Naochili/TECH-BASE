@@ -3,30 +3,31 @@ session_start();
  
 header("Content-type: text/html; charset=UTF-8");
  
-//ƒNƒƒXƒTƒCƒgƒŠƒNƒGƒXƒgƒtƒH[ƒWƒFƒŠiCSRFj‘Îô‚Ìƒg[ƒNƒ“”»’è
+//ã‚¯ãƒ­ã‚¹ã‚µã‚¤ãƒˆãƒªã‚¯ã‚¨ã‚¹ãƒˆãƒ•ã‚©ãƒ¼ã‚¸ã‚§ãƒªï¼ˆCSRFï¼‰å¯¾ç­–ã®ãƒˆãƒ¼ã‚¯ãƒ³åˆ¤å®š
 if ($_POST['token'] != $_SESSION['token']){
 	echo "You may have possibility of unauthorized access! ";
 	exit();
 }
  
-//ƒNƒŠƒbƒNƒWƒƒƒbƒLƒ“ƒO‘Îô
+//ã‚¯ãƒªãƒƒã‚¯ã‚¸ãƒ£ãƒƒã‚­ãƒ³ã‚°å¯¾ç­–
 header('X-FRAME-OPTIONS: SAMEORIGIN');
 
-//ƒf[ƒ^ƒx[ƒXÚ‘±
+//ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹æ¥ç¶š
 require_once("db.php");
 $dbh = db_connect();
 
-//ƒGƒ‰[ƒƒbƒZ[ƒW‚Ì‰Šú‰»
+
+//ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®åˆæœŸåŒ–
 $errors = array();
 
 if(empty($_POST)) {
 	header("Location: email_registration.php");
 	exit();
 }else{
-	//POST‚³‚ê‚½ƒf[ƒ^‚ğ•Ï”‚É“ü‚ê‚é
-	$mail = isset($_POST['email']) ? $_POST['email'] : NULL;
+	//POSTã•ã‚ŒãŸãƒ‡ãƒ¼ã‚¿ã‚’å¤‰æ•°ã«å…¥ã‚Œã‚‹
+	$mail = isset($_POST['mail']) ? $_POST['mail'] : NULL;
 
-	//ƒ[ƒ‹“ü—Í”»’è
+	//ãƒ¡ãƒ¼ãƒ«å…¥åŠ›åˆ¤å®š
 	if ($mail == ''){
 		$errors['mail'] = "Write your email address.";
 	}else{
@@ -45,22 +46,22 @@ if(empty($_POST)) {
 
 if (count($errors) === 0){
 	
-	$urltoken = hash('sha256',uniqid(rand(),1));
-	$url = "http://tt-555.99sv-coco.com/email_registration.php"."?urltoken=".$urltoken;
+	$token = hash('sha256',uniqid(rand(),1));
+	$url = "http://tt-555.99sv-coco.com/registration_form.php"."?urltoken=".$token;
 	
-	//‚±‚±‚Åƒf[ƒ^ƒx[ƒX‚É“o˜^‚·‚é
+	//ã“ã“ã§ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã«ç™»éŒ²ã™ã‚‹
 	try{
-		//—áŠOˆ—‚ğ“Š‚°‚éiƒXƒ[j‚æ‚¤‚É‚·‚é
-		$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		//ä¾‹å¤–å‡¦ç†ã‚’æŠ•ã’ã‚‹ï¼ˆã‚¹ãƒ­ãƒ¼ï¼‰ã‚ˆã†ã«ã™ã‚‹
 		
-		$statement = $dbh->prepare("INSERT INTO pre_member (urltoken,email,date) VALUES (:urltoken,:email,now() )");
 		
-		//ƒvƒŒ[ƒXƒzƒ‹ƒ_‚ÖÀÛ‚Ì’l‚ğİ’è‚·‚é
-		$statement->bindValue(':urltoken', $urltoken, PDO::PARAM_STR);
-		$statement->bindValue(':email', $mail, PDO::PARAM_STR);
-		$statement->execute();
+		$sql = $dbh->prepare("INSERT INTO pre_member (urltoken,mail,date) VALUES (:urltoken,:mail,,now() )");
+		
+		//ãƒ—ãƒ¬ãƒ¼ã‚¹ãƒ›ãƒ«ãƒ€ã¸å®Ÿéš›ã®å€¤ã‚’è¨­å®šã™ã‚‹
+		$sql->bindParam(':urltoken', $urltoken, PDO::PARAM_STR);
+		$sql->bindParam(':mail', $mail, PDO::PARAM_STR);
+		$sql-> execute();
 			
-		//ƒf[ƒ^ƒx[ƒXÚ‘±Ø’f
+		//ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹æ¥ç¶šåˆ‡æ–­
 		$dbh = null;	
 		
 	}catch (PDOException $e){
@@ -68,14 +69,14 @@ if (count($errors) === 0){
 		die();
 	}
 	
-	//ƒ[ƒ‹‚Ìˆ¶æ
-	$mailTo = $email;
+	//ãƒ¡ãƒ¼ãƒ«ã®å®›å…ˆ
+	$mailTo = $mail;
  
-	//Return-Path‚Éw’è‚·‚éƒ[ƒ‹ƒAƒhƒŒƒX
+	//Return-Pathã«æŒ‡å®šã™ã‚‹ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹
 	$returnMail = 'tt-555.99sv-coco.com';
  
 	$name = "japanese foods book";
-	$email = 'tt-555.99sv-coco.com';
+	$mail = 'tt-555.99sv-coco.com';
 	$subject = "Registration on Japanese Foods Book";
  
 $body = <<< EOM
@@ -86,20 +87,20 @@ EOM;
 	mb_language('en');
 	mb_internal_encoding('UTF-8');
  
-	//Fromƒwƒbƒ_[‚ğì¬
-	$header = 'From: ' . mb_encode_mimeheader($name). ' <' . $email. '>';
+	//Fromãƒ˜ãƒƒãƒ€ãƒ¼ã‚’ä½œæˆ
+	$header = 'From: ' . mb_encode_mimeheader($name). ' <' . $mail. '>';
  
 	if (mb_send_mail($mailTo, $subject, $body, $header, '-f'. $returnMail)) {
 	
-	 	//ƒZƒbƒVƒ‡ƒ“•Ï”‚ğ‘S‚Ä‰ğœ
+	 	//ã‚»ãƒƒã‚·ãƒ§ãƒ³å¤‰æ•°ã‚’å…¨ã¦è§£é™¤
 		$_SESSION = array();
 	
-		//ƒNƒbƒL[‚Ìíœ
+		//ã‚¯ãƒƒã‚­ãƒ¼ã®å‰Šé™¤
 		if (isset($_COOKIE["PHPSESSID"])) {
 			setcookie("PHPSESSID", '', time() - 1800, '/');
 		}
 	
- 		//ƒZƒbƒVƒ‡ƒ“‚ğ”jŠü‚·‚é
+ 		//ã‚»ãƒƒã‚·ãƒ§ãƒ³ã‚’ç ´æ£„ã™ã‚‹
  		session_destroy();
  	
  		$message = "We sent you an email.Please registrate your account within 24h from folowing URL.";
@@ -129,7 +130,7 @@ EOM;
 <p><?=$message?></p>
 
 <p>We sent you a email with the following URL</p>
-a href="<?=$url?>"><?=$url?></a>
+<a href="<?=$url?>"><?=$url?></a>
 
 <?php elseif(count($errors) > 0): ?>
 
